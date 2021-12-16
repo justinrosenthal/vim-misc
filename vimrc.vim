@@ -1,265 +1,82 @@
-scriptencoding utf-8
-set encoding=utf-8
+set noswapfile
 
-"----------------------------------------------------------------------
-" Basic Options
-"----------------------------------------------------------------------
-let mapleader=";"         " The <leader> key
-set autoread              " Reload files that have not been modified
-set backspace=2           " Makes backspace behave like you'd expect
-set colorcolumn=80        " Highlight 80 character limit
-set hidden                " Allow buffers to be backgrounded without being saved
-set laststatus=2          " Always show the status bar
-set list                  " Show invisible characters
-set listchars=tab:›\ ,eol:¬,trail:⋅ "Set the characters for the invisibles
-set number
-set ruler                 " Show the line number and column in the status bar
-set t_Co=256              " Use 256 colors
-set scrolloff=999         " Keep the cursor centered in the screen
-set showmatch             " Highlight matching braces
-set showmode              " Show the current mode on the open buffer
-set splitbelow            " Splits show up below by default
-set splitright            " Splits go to the right by default
-set title                 " Set the title for gvim
-set visualbell            " Use a visual bell to notify us
+" ----------------------------------------------------------------------------
+"  Text Formatting
+" ----------------------------------------------------------------------------
 
-" Customize session options. Namely, I don't want to save hidden and
-" unloaded buffers or empty windows.
-set sessionoptions="curdir,folds,help,options,tabpages,winsize"
+" syntax
+syntax on
+set background=dark
 
-if !has("win32")
-    set showbreak=↪           " The character to put to show a line has been wrapped
-end
+" whitespace
+set autoindent
+set smartindent
+set nowrap
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set nosmarttab
 
-syntax on                 " Enable filetype detection by syntax
+" ----------------------------------------------------------------------------
+"  Remapping
+" ----------------------------------------------------------------------------
 
-" Backup settings
-execute "set directory=" . g:vim_home_path . "/swap"
-execute "set backupdir=" . g:vim_home_path . "/backup"
-execute "set undodir=" . g:vim_home_path . "/undo"
-set backup
-set undofile
-set writebackup
+" creating tabs and cycling through them
+nmap } :tabn<Enter>
+nmap { :tabp<Enter>
+map <C-T> :tabnew<Enter>
+imap <C-T> <ESC>:tabnew<Enter>
 
-" Search settings
-set hlsearch   " Highlight results
-set ignorecase " Ignore casing of searches
-set incsearch  " Start showing results as you type
-set smartcase  " Be smart about case sensitivity when searching
+" sane movement with wrap turned on
+nmap j gj
+nmap k gk
+vmap j gj
+vmap k gk
+nmap <Down> gj
+nmap <Up> gk
+vmap <Down> gj
+vmap <Up> gk
 
-" Tab settings
-set expandtab     " Expand tabs to the proper type and size
-set tabstop=4     " Tabs width in spaces
-set softtabstop=4 " Soft tab width in spaces
-set shiftwidth=4  " Amount of spaces when shifting
+" ----------------------------------------------------------------------------
+"  UI
+" ----------------------------------------------------------------------------
 
-" Tab completion settings
-set wildmode=list:longest     " Wildcard matches show a list, matching the longest first
-set wildignore+=.git,.hg,.svn " Ignore version control repos
-set wildignore+=*.6           " Ignore Go compiled files
-set wildignore+=*.pyc         " Ignore Python compiled files
-set wildignore+=*.rbc         " Ignore Rubinius compiled files
-set wildignore+=*.swp         " Ignore vim backups
+set ruler                  " show the cursor position all the time
+set noshowcmd              " don't display incomplete commands
+set nolazyredraw           " turn off lazy redraw
+set backspace=2            " allow backspacing over everything in insert mode
+set scrolloff=8            " start scrolling before edge of screen
 
-" GUI settings
-colorscheme onehalfdark
+" ----------------------------------------------------------------------------
+" Visual Cues
+" ----------------------------------------------------------------------------
 
-" This is required to force 24-bit color since I use a modern terminal.
-set termguicolors
+set showmatch              " brackets/braces that is
+set mat=5                  " duration to show matching brace (1/10 sec)
+set incsearch              " do incremental searching
+set laststatus=2           " always show the status line
+set ignorecase             " ignore case when searching
+set hlsearch               " highlight searches
+set visualbell             " shut up
+set t_vb=                  " no flashing
 
-if !has("gui_running")
-    " vim hardcodes background color erase even if the terminfo file does
-    " not contain bce (not to mention that libvte based terminals
-    " incorrectly contain bce in their terminfo files). This causes
-    " incorrect background rendering when using a color theme with a
-    " background color.
-    "
-    " see: https://github.com/kovidgoyal/kitty/issues/108
-    let &t_ut=''
-endif
+" ----------------------------------------------------------------------------
+" Plugins
+" ----------------------------------------------------------------------------
 
-set guioptions=cegmt
-if has("win32")
-    set guifont=Inconsolata:h11
-else
-    set guifont=Monaco\ for\ Powerline:h12
-endif
+packadd! dracula-vim
+let g:dracula_colorterm = 0
+colorscheme dracula
 
-if exists("&fuopt")
-    set fuopt+=maxhorz
-endif
+let g:go_def_mapping_enabled = 0
+let g:go_highlight_extra_types = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_parameters = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_format_strings = 1
+let g:go_highlight_variable_assignments = 1
 
-"----------------------------------------------------------------------
-" Key Mappings
-"----------------------------------------------------------------------
-" Remap a key sequence in insert mode to kick me out to normal
-" mode. This makes it so this key sequence can never be typed
-" again in insert mode, so it has to be unique.
-inoremap jj <esc>
-inoremap jJ <esc>
-inoremap Jj <esc>
-inoremap JJ <esc>
-inoremap jk <esc>
-inoremap jK <esc>
-inoremap Jk <esc>
-inoremap JK <esc>
-
-" Make j/k visual down and up instead of whole lines. This makes word
-" wrapping a lot more pleasent.
-map j gj
-map k gk
-
-" cd to the directory containing the file in the buffer. Both the local
-" and global flavors.
-nmap <leader>cd :cd %:h<CR>
-nmap <leader>lcd :lcd %:h<CR>
-
-" Shortcut to edit the vimrc
-if has("nvim")
-    nmap <silent> <leader>vimrc :e ~/nvim/init.vim<CR>
-else
-    nmap <silent> <leader>vimrc :e ~/.vimrc<CR>
-endif
-
-" Shortcut to edit the vimmisc
-nmap <silent> <leader>vimmisc :execute "e " . g:vim_home_path . "/plugged/vim-misc/vimrc.vim"<CR>
-
-" Make navigating around splits easier
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-h> <C-w>h
-nnoremap <C-l> <C-w>l
-if has('nvim')
-  " We have to do this to fix a bug with Neovim on OS X where C-h
-  " is sent as backspace for some reason.
-  nnoremap <BS> <C-W>h
-endif
-
-" Navigating tabs easier
-map <D-S-{> :tabprevious
-map <D-S-}> :tabprevious
-
-" Shortcut to yanking to the system clipboard
-map <leader>y "+y
-map <leader>p "+p
-
-" Get rid of search highlights
-noremap <silent><leader>/ :nohlsearch<cr>
-
-" Command to write as root if we dont' have permission
-cmap w!! %!sudo tee > /dev/null %
-
-" Expand in command mode to the path of the currently open file
-cnoremap %% <C-R>=expand('%:h').'/'<CR>
-
-" Buffer management
-nnoremap <leader>d   :bd<cr>
-
-" Terminal mode
-if has("nvim")
-    tnoremap <esc> <C-\><C-n>
-    tnoremap jj <C-\><C-n>
-    tnoremap jJ <C-\><C-n>
-    tnoremap Jj <C-\><C-n>
-    tnoremap JJ <C-\><C-n>
-    tnoremap jk <C-\><C-n>
-    tnoremap jK <C-\><C-n>
-    tnoremap Jk <C-\><C-n>
-    tnoremap JK <C-\><C-n>
-    nnoremap <Leader>c :terminal <CR>
-endif
-
-if has("gui_running")
-    " Tabs
-    map <C-t> :tabnew<CR>
-    map <C-c> :tabclose<CR>
-    map <C-[> :tabprevious<CR>
-    map <C-]> :tabnext<CR>
-endif
-
-" CtrlP
-nnoremap <leader>t :CtrlP<cr>
-nnoremap <leader>b :CtrlPBuffer<cr>
-nnoremap <leader>l :CtrlPLine<cr>
-
-" Easymotion
-nmap <SPACE> <Plug>(easymotion-s)
-nmap <leader>j <Plug>(easymotion-bd-jk)
-nmap <leader>k <Plug>(easymotion-bd-jk)
-nmap <leader><leader>j <Plug>(easymotion-overwin-line)
-nmap <leader><leader>k <Plug>(easymotion-overwin-line)
-
-"----------------------------------------------------------------------
-" Autocommands
-"----------------------------------------------------------------------
-" Clear whitespace at the end of lines automatically
-autocmd BufWritePre * :%s/\s\+$//e
-
-" Don't fold anything.
-autocmd BufWinEnter * set foldlevel=999999
-
-"----------------------------------------------------------------------
-" Helpers
-"----------------------------------------------------------------------
-
-" SyncStack shows the current syntax highlight group stack.
-nmap <leader>sp :call <SID>SynStack()<CR>
-function! <SID>SynStack()
-    if !exists("*synstack")
-        return
-    endif
-
-    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
-    echo map(synstack(line('.'), col('.')), 'synIDattr(synIDtrans(v:val), "name")')
-endfunc
-
-"----------------------------------------------------------------------
-" Plugin settings
-"----------------------------------------------------------------------
-" Airline
-let g:airline_powerline_fonts = 1
-" Don't need to set this since Dracula includes a powerline theme
-" let g:airline_theme = "powerlineish"
-
-" CtrlP
-let g:ctrlp_max_files = 10000
-if has("unix")
-    let g:ctrlp_user_command = {
-        \ 'types': {
-            \ 1: ['.git', 'cd %s && git ls-files . -co --exclude-standard'],
-            \ 2: ['.hg', 'hg --cwd %s locate -I .'],
-        \ },
-        \ 'fallback': 'find %s -type f | head -' . g:ctrlp_max_files
-    \ }
-endif
-
-let g:ctrlp_buffer_func = { 'enter': 'MyCtrlPMappings' }
-
-func! MyCtrlPMappings()
-    nnoremap <buffer> <silent> <c-@> :call <sid>DeleteBuffer()<cr>
-endfunc
-
-func! s:DeleteBuffer()
-  let line = getline('.')
-  let bufid = line =~ '\[\d\+\*No Name\]$' ? str2nr(matchstr(line, '\d\+'))
-        \ : fnamemodify(line[2:], ':p')
-  exec "bd" bufid
-  exec "norm \<F5>"
-endfunc<D-j>
-
-" JavaScript & JSX
-let g:jsx_ext_required = 0
-
-" JSON
-let g:vim_json_syntax_conceal = 0
-
-" Default SQL type to PostgreSQL
-let g:sql_type_default = 'pgsql'
-
-"----------------------------------------------------------------------
-" Neovim
-"----------------------------------------------------------------------
-" In neovim, we configure more things via Lua
-if has("nvim")
-    lua require("vim-misc")
-endif
+let g:terraform_fmt_on_save = 1
